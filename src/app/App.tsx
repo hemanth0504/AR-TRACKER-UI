@@ -30,8 +30,9 @@ type NavItem = {
 const navItems: NavItem[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "invoices", label: "Invoices", icon: FileText },
-  { id: "reminders", label: "Reminders", icon: Bell },
   { id: "clients", label: "Clients", icon: Upload },
+  { id: "reminders", label: "Reminders", icon: Bell },
+  
 ];
 
 export default function App() {

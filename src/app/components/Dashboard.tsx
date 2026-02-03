@@ -180,39 +180,97 @@ export function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Invoice Aging */}
+        {/* Enhanced Invoice Aging */}
         <Card>
           <CardHeader>
             <CardTitle>Invoice Aging Distribution</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-center">
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={agingData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percentage, count }) => `${name}: ${percentage}% (${count})`}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {agingData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--background))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                    }}
-                    formatter={(value: number) => `$${value}M`}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+            <div className="space-y-6">
+              {/* Donut Chart */}
+              <div className="relative flex items-center justify-center">
+                <ResponsiveContainer width="100%" height={220}>
+                  <PieChart>
+                    <Pie
+                      data={agingData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={85}
+                      paddingAngle={3}
+                      dataKey="value"
+                      label={({ percentage }) => `${percentage}%`}
+                      labelLine={false}
+                    >
+                      {agingData.map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={COLORS[index % COLORS.length]}
+                          stroke="hsl(var(--background))"
+                          strokeWidth={2}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--background))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                        boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                      }}
+                      formatter={(value: number) => [`$${value}M`, 'Amount']}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                {/* Center Text */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold">$18.5M</p>
+                    <p className="text-xs text-muted-foreground">Total AR</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Custom Legend with Details */}
+              <div className="space-y-2.5">
+                {agingData.map((item, index) => (
+                  <div key={index} className="flex items-center justify-between p-3.5 rounded-lg bg-accent/30 hover:bg-accent/50 transition-colors">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div 
+                        className="h-4 w-4 rounded-sm flex-shrink-0" 
+                        style={{ backgroundColor: COLORS[index] }}
+                      />
+                      <span className="text-sm font-medium min-w-[90px]">{item.name}</span>
+                    </div>
+                    <div className="flex items-center gap-8 text-sm">
+                      <div className="text-center min-w-[60px]">
+                        <p className="font-semibold text-base">{item.count}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">invoices</p>
+                      </div>
+                      <div className="text-right min-w-[70px]">
+                        <p className="font-bold text-base">${item.value}M</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{item.percentage}%</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Summary Stats */}
+              <div className="grid grid-cols-3 gap-4 pt-4 border-t">
+                <div className="text-center py-4">
+                  <p className="text-xl font-bold text-green-600">75%</p>
+                  <p className="text-xs text-muted-foreground mt-1">Current</p>
+                </div>
+                <div className="text-center border-x py-1">
+                  <p className="text-xl font-bold text-orange-600">15%</p>
+                  <p className="text-xs text-muted-foreground mt-1">31-60 Days</p>
+                </div>
+                <div className="text-center py-0">
+                  <p className="text-xl font-bold text-red-600">10%</p>
+                  <p className="text-xs text-muted-foreground mt-1">60+ Days</p>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
