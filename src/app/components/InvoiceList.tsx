@@ -42,7 +42,7 @@ interface Invoice {
 }
 
 /* -----------------------------
-   Mock Data (Unpaid Invoices)
+   Mock Data
 ------------------------------ */
 
 const invoices: Invoice[] = [
@@ -112,12 +112,108 @@ const getRiskBadge = (score: number) => {
 };
 
 /* -----------------------------
-   Component
+   Invoice Detail (Design Only)
+------------------------------ */
+
+function InvoiceDetail({
+  invoice,
+  onBack,
+}: {
+  invoice: Invoice;
+  onBack: () => void;
+}) {
+  const agingBucket = getAgingBucket(invoice.daysOverdue);
+
+  return (
+    <div className="space-y-6">
+      <button
+        onClick={onBack}
+        className="text-sm text-muted-foreground hover:underline"
+      >
+        ← Back to Invoices
+      </button>
+
+      {/* Overview */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Invoice {invoice.id}</CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div>
+            <p className="text-xs text-muted-foreground">Client</p>
+            <p className="font-semibold">{invoice.customer}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Amount</p>
+            <p className="font-semibold">${invoice.amount.toLocaleString()}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Due Date</p>
+            <p className="font-semibold">
+              {new Date(invoice.dueDate).toLocaleDateString()}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Aging</p>
+            {getAgingBadge(agingBucket)}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Payment History */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Payment History</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground">
+          No payments recorded for this invoice.
+        </CardContent>
+      </Card>
+
+      {/* Reminder History */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Reminder History</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground">
+          {invoice.lastReminderSent
+            ? `Last reminder sent on ${new Date(
+                invoice.lastReminderSent
+              ).toLocaleDateString()}.`
+            : "No reminders have been sent for this invoice."}
+        </CardContent>
+      </Card>
+
+      {/* Actions */}
+      <div className="flex gap-2">
+        <Button className="gap-1">
+          <Send className="h-4 w-4" />
+          Send Reminder
+        </Button>
+        <Button variant="outline">Add Internal Note</Button>
+      </div>
+    </div>
+  );
+}
+
+/* -----------------------------
+   Invoice List
 ------------------------------ */
 
 export function InvoiceList() {
   const [agingFilter, setAgingFilter] = useState<AgingBucket | "all">("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedInvoice, setSelectedInvoice] =
+    useState<Invoice | null>(null);
+
+  if (selectedInvoice) {
+    return (
+      <InvoiceDetail
+        invoice={selectedInvoice}
+        onBack={() => setSelectedInvoice(null)}
+      />
+    );
+  }
 
   const filteredInvoices = invoices.filter((invoice) => {
     const bucket = getAgingBucket(invoice.daysOverdue);
@@ -187,13 +283,9 @@ export function InvoiceList() {
 
                 return (
                   <TableRow key={invoice.id}>
-                    <TableCell className="font-mono">
-                      {invoice.id}
-                    </TableCell>
+                    <TableCell className="font-mono">{invoice.id}</TableCell>
                     <TableCell>{invoice.customer}</TableCell>
-                    <TableCell>
-                      ${invoice.amount.toLocaleString()}
-                    </TableCell>
+                    <TableCell>${invoice.amount.toLocaleString()}</TableCell>
                     <TableCell>
                       {new Date(invoice.dueDate).toLocaleDateString()}
                       {invoice.daysOverdue > 0 && (
@@ -202,12 +294,8 @@ export function InvoiceList() {
                         </span>
                       )}
                     </TableCell>
-                    <TableCell>
-                      {getAgingBadge(agingBucket)}
-                    </TableCell>
-                    <TableCell>
-                      {getRiskBadge(invoice.riskScore)}
-                    </TableCell>
+                    <TableCell>{getAgingBadge(agingBucket)}</TableCell>
+                    <TableCell>{getRiskBadge(invoice.riskScore)}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {invoice.lastReminderSent
                         ? new Date(
@@ -217,7 +305,11 @@ export function InvoiceList() {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setSelectedInvoice(invoice)}
+                        >
                           View
                         </Button>
                         <Button size="sm" className="gap-1">
