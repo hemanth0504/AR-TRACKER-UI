@@ -74,8 +74,7 @@ export default function App() {
                 <DollarSign className="h-5 w-5 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="font-semibold">AR Automation</h1>
-                <p className="text-xs text-muted-foreground">Enterprise Edition</p>
+                <h1 className="font-semibold">SpendIQ</h1>
               </div>
             </div>
             <div className="relative hidden lg:block">
@@ -101,7 +100,7 @@ export default function App() {
                 <User className="h-4 w-4 text-primary" />
               </div>
               <div className="hidden md:block">
-                <p className="text-sm font-medium">Sarah Chen</p>
+                <p className="text-sm font-medium">4A User</p>
                 <p className="text-xs text-muted-foreground">AR Manager</p>
               </div>
             </div>
