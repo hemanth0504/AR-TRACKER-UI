@@ -1,4 +1,10 @@
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -17,197 +23,177 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { Search, Download, Send, AlertCircle, CheckCircle2, Clock } from "lucide-react";
-import { useState } from "react";
+import { Search, Send } from "lucide-react";
 
-const invoices = [
+/* -----------------------------
+   Types
+------------------------------ */
+
+type AgingBucket = "0-30" | "31-60" | "60+";
+
+interface Invoice {
+  id: string;
+  customer: string;
+  amount: number;
+  dueDate: string;
+  daysOverdue: number;
+  riskScore: number;
+  lastReminderSent?: string;
+}
+
+/* -----------------------------
+   Mock Data (Unpaid Invoices)
+------------------------------ */
+
+const invoices: Invoice[] = [
   {
     id: "INV-2024-001",
     customer: "Acme Corporation",
-    amount: 9625000,
+    amount: 962500,
     dueDate: "2024-12-15",
-    status: "overdue",
     daysOverdue: 7,
     riskScore: 85,
-    lastContact: "2024-12-20",
-  },
-  {
-    id: "INV-2024-002",
-    customer: "TechStart Industries",
-    amount: 6737500,
-    dueDate: "2024-12-28",
-    status: "due-soon",
-    daysOverdue: 0,
-    riskScore: 45,
-    lastContact: "2024-12-18",
+    lastReminderSent: "2024-12-20",
   },
   {
     id: "INV-2024-003",
     customer: "Global Enterprises",
-    amount: 19250000,
+    amount: 1925000,
     dueDate: "2024-11-30",
-    status: "overdue",
     daysOverdue: 22,
     riskScore: 92,
-    lastContact: "2024-12-15",
-  },
-  {
-    id: "INV-2024-004",
-    customer: "NextGen Solutions",
-    amount: 3234000,
-    dueDate: "2025-01-05",
-    status: "current",
-    daysOverdue: 0,
-    riskScore: 20,
-    lastContact: "2024-12-22",
+    lastReminderSent: "2024-12-15",
   },
   {
     id: "INV-2024-005",
     customer: "Innovation Labs",
-    amount: 12012000,
+    amount: 1201200,
     dueDate: "2024-12-20",
-    status: "overdue",
     daysOverdue: 2,
     riskScore: 68,
-    lastContact: "2024-12-21",
-  },
-  {
-    id: "INV-2024-006",
-    customer: "Quantum Corp",
-    amount: 7546000,
-    dueDate: "2025-01-10",
-    status: "current",
-    daysOverdue: 0,
-    riskScore: 15,
-    lastContact: "2024-12-19",
-  },
-  {
-    id: "INV-2024-007",
-    customer: "DataFlow Systems",
-    amount: 5659500,
-    dueDate: "2024-12-25",
-    status: "due-soon",
-    daysOverdue: 0,
-    riskScore: 38,
-    lastContact: "2024-12-16",
+    lastReminderSent: "2024-12-21",
   },
   {
     id: "INV-2024-008",
     customer: "CloudFirst Inc",
-    amount: 14245000,
+    amount: 1424500,
     dueDate: "2024-11-20",
-    status: "overdue",
     daysOverdue: 32,
     riskScore: 95,
-    lastContact: "2024-12-10",
+    lastReminderSent: "2024-12-10",
   },
 ];
 
+/* -----------------------------
+   Helpers
+------------------------------ */
+
+const getAgingBucket = (daysOverdue: number): AgingBucket => {
+  if (daysOverdue <= 30) return "0-30";
+  if (daysOverdue <= 60) return "31-60";
+  return "60+";
+};
+
+const getAgingBadge = (bucket: AgingBucket) => {
+  switch (bucket) {
+    case "0-30":
+      return <Badge className="bg-green-500">0–30 Days</Badge>;
+    case "31-60":
+      return <Badge className="bg-orange-500">31–60 Days</Badge>;
+    case "60+":
+      return <Badge variant="destructive">60+ Days</Badge>;
+  }
+};
+
+const getRiskBadge = (score: number) => {
+  if (score >= 80) return <Badge variant="destructive">High Risk</Badge>;
+  if (score >= 50) return <Badge className="bg-orange-500">Medium Risk</Badge>;
+  return <Badge className="bg-green-500">Low Risk</Badge>;
+};
+
+/* -----------------------------
+   Component
+------------------------------ */
+
 export function InvoiceList() {
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [agingFilter, setAgingFilter] = useState<AgingBucket | "all">("all");
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredInvoices = invoices.filter((invoice) => {
-    const matchesStatus = statusFilter === "all" || invoice.status === statusFilter;
+    const bucket = getAgingBucket(invoice.daysOverdue);
+    const matchesAging = agingFilter === "all" || bucket === agingFilter;
     const matchesSearch =
       invoice.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
       invoice.id.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesStatus && matchesSearch;
+    return matchesAging && matchesSearch;
   });
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "overdue":
-        return (
-          <Badge variant="destructive" className="gap-1">
-            <AlertCircle className="h-3 w-3" />
-            Overdue
-          </Badge>
-        );
-      case "due-soon":
-        return (
-          <Badge variant="outline" className="gap-1 border-orange-500 text-orange-600">
-            <Clock className="h-3 w-3" />
-            Due Soon
-          </Badge>
-        );
-      case "current":
-        return (
-          <Badge variant="outline" className="gap-1 border-green-500 text-green-600">
-            <CheckCircle2 className="h-3 w-3" />
-            Current
-          </Badge>
-        );
-      default:
-        return <Badge variant="secondary">{status}</Badge>;
-    }
-  };
-
-  const getRiskBadge = (score: number) => {
-    if (score >= 80) {
-      return <Badge variant="destructive">High Risk</Badge>;
-    } else if (score >= 50) {
-      return <Badge className="bg-orange-500">Medium Risk</Badge>;
-    } else {
-      return <Badge className="bg-green-500">Low Risk</Badge>;
-    }
-  };
-
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <CardTitle>Invoice Management</CardTitle>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1 sm:w-64">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search invoices or customers..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-40">
-                  <SelectValue placeholder="Filter status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="overdue">Overdue</SelectItem>
-                  <SelectItem value="due-soon">Due Soon</SelectItem>
-                  <SelectItem value="current">Current</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button variant="outline" className="gap-2">
-                <Download className="h-4 w-4" />
-                Export
-              </Button>
+    <Card>
+      <CardHeader>
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <CardTitle>Unpaid Invoices</CardTitle>
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative sm:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search invoices or clients..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9"
+              />
             </div>
+
+            <Select
+              value={agingFilter}
+              onValueChange={(value) =>
+                setAgingFilter(value as AgingBucket | "all")
+              }
+            >
+              <SelectTrigger className="sm:w-40">
+                <SelectValue placeholder="Aging bucket" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Aging</SelectItem>
+                <SelectItem value="0-30">0–30 Days</SelectItem>
+                <SelectItem value="31-60">31–60 Days</SelectItem>
+                <SelectItem value="60+">60+ Days</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Invoice ID</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Due Date</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Risk Score</TableHead>
-                  <TableHead>Last Contact</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredInvoices.map((invoice) => (
+        </div>
+      </CardHeader>
+
+      <CardContent>
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Invoice ID</TableHead>
+                <TableHead>Client</TableHead>
+                <TableHead>Outstanding Amount</TableHead>
+                <TableHead>Due Date</TableHead>
+                <TableHead>Aging</TableHead>
+                <TableHead>Risk</TableHead>
+                <TableHead>Last Reminder</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+
+            <TableBody>
+              {filteredInvoices.map((invoice) => {
+                const agingBucket = getAgingBucket(invoice.daysOverdue);
+
+                return (
                   <TableRow key={invoice.id}>
-                    <TableCell className="font-mono">{invoice.id}</TableCell>
+                    <TableCell className="font-mono">
+                      {invoice.id}
+                    </TableCell>
                     <TableCell>{invoice.customer}</TableCell>
-                    <TableCell>₹{(invoice.amount / 100000).toFixed(2)}L</TableCell>
+                    <TableCell>
+                      ${invoice.amount.toLocaleString()}
+                    </TableCell>
                     <TableCell>
                       {new Date(invoice.dueDate).toLocaleDateString()}
                       {invoice.daysOverdue > 0 && (
@@ -216,42 +202,41 @@ export function InvoiceList() {
                         </span>
                       )}
                     </TableCell>
-                    <TableCell>{getStatusBadge(invoice.status)}</TableCell>
-                    <TableCell>{getRiskBadge(invoice.riskScore)}</TableCell>
+                    <TableCell>
+                      {getAgingBadge(agingBucket)}
+                    </TableCell>
+                    <TableCell>
+                      {getRiskBadge(invoice.riskScore)}
+                    </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {new Date(invoice.lastContact).toLocaleDateString()}
+                      {invoice.lastReminderSent
+                        ? new Date(
+                            invoice.lastReminderSent
+                          ).toLocaleDateString()
+                        : "—"}
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline" className="h-8">
+                        <Button size="sm" variant="outline">
                           View
                         </Button>
-                        <Button size="sm" className="h-8 gap-1">
+                        <Button size="sm" className="gap-1">
                           <Send className="h-3 w-3" />
                           Send Reminder
                         </Button>
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-          <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
-            <div>
-              Showing {filteredInvoices.length} of {invoices.length} invoices
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm">
-                Previous
-              </Button>
-              <Button variant="outline" size="sm">
-                Next
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
+
+        <div className="mt-4 text-sm text-muted-foreground">
+          Showing {filteredInvoices.length} of {invoices.length} unpaid invoices
+        </div>
+      </CardContent>
+    </Card>
   );
 }
