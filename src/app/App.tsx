@@ -3,7 +3,6 @@ import { Dashboard } from "./components/Dashboard";
 import {Clients} from "./components/Clients";
 import { InvoiceList } from "./components/InvoiceList";
 import { AIInsights } from "./components/AIInsights";
-import { Analytics } from "./components/Analytics";
 import { Button } from "./components/ui/button";
 import {
   LayoutDashboard,
@@ -32,7 +31,6 @@ const navItems: NavItem[] = [
   { id: "invoices", label: "Invoices", icon: FileText },
   { id: "ai-insights", label: "AI Insights", icon: Brain },
   { id: "clients", label: "Clients", icon: Upload },
-  { id: "analytics", label: "Analytics", icon: TrendingUp },
 ];
 
 export default function App() {
@@ -48,8 +46,6 @@ export default function App() {
         return <AIInsights />;
       case "clients":
         return <Clients />;
-      case "analytics":
-        return <Analytics />;
       default:
         return <Dashboard />;
     }
@@ -134,7 +130,7 @@ export default function App() {
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Collections Today</span>
-                <span className="font-medium text-green-600">₹1.1Cr</span>
+                <span className="font-medium text-green-600">$100K</span>
               </div>
             </div>
           </div>
