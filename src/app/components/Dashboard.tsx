@@ -1,31 +1,102 @@
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { TrendingUp, TrendingDown, DollarSign, Clock, AlertTriangle, CheckCircle } from "lucide-react";
-import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { TrendingUp, TrendingDown, DollarSign, Clock, AlertTriangle, CheckCircle, User, Mail, Phone } from "lucide-react";
+import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Line, LineChart } from "recharts";
 
 const kpiData = [
-  { label: "Total AR", value: "₹18.5Cr", change: "+5.2%", trend: "up", icon: DollarSign },
-  { label: "Current (0-30)", value: "₹13.9Cr", change: "+2.1%", trend: "up", icon: CheckCircle },
-  { label: "Overdue (30+)", value: "₹4.7Cr", change: "-8.3%", trend: "down", icon: Clock },
-  { label: "At Risk", value: "₹96L", change: "+12.4%", trend: "up", icon: AlertTriangle },
+  { label: "Total AR", value: "$18.5M", change: "+5.2%", trend: "up", icon: DollarSign },
+  { label: "Current (0-30)", value: "$13.9M", change: "+2.1%", trend: "up", icon: CheckCircle },
+  { label: "Overdue (30+)", value: "$4.7M", change: "-8.3%", trend: "down", icon: Clock },
+  { label: "At Risk", value: "$960K", change: "+12.4%", trend: "up", icon: AlertTriangle },
 ];
 
-const collectionTrend = [
-  { month: "Jan", collected: 6.3, outstanding: 1.4 },
-  { month: "Feb", collected: 6.8, outstanding: 1.3 },
-  { month: "Mar", collected: 7.0, outstanding: 1.1 },
-  { month: "Apr", collected: 7.3, outstanding: 1.0 },
-  { month: "May", collected: 7.5, outstanding: 0.9 },
-  { month: "Jun", collected: 8.1, outstanding: 0.7 },
+// Top outstanding invoices requiring attention
+const topOutstandingInvoices = [
+  { invoiceNo: "INV-2024-1247", client: "MegaMart", amount: 340000, dueDate: "Oct 15, 2024", daysOverdue: 67, status: "overdue" },
+  { invoiceNo: "INV-2024-1312", client: "TechStart Inc", amount: 280000, dueDate: "Nov 8, 2024", daysOverdue: 45, status: "overdue" },
+  { invoiceNo: "INV-2024-1389", client: "RetailHub", amount: 180000, dueDate: "Nov 1, 2024", daysOverdue: 52, status: "overdue" },
+  { invoiceNo: "INV-2024-1421", client: "BuildCo", amount: 160000, dueDate: "Nov 15, 2024", daysOverdue: 38, status: "overdue" },
+  { invoiceNo: "INV-2024-1456", client: "Acme Corp", amount: 225000, dueDate: "Dec 1, 2024", daysOverdue: 22, status: "late" },
+  { invoiceNo: "INV-2024-1489", client: "Global Trade", amount: 195000, dueDate: "Dec 10, 2024", daysOverdue: 13, status: "late" },
 ];
 
+// Invoice aging distribution
 const agingData = [
-  { name: "0-30 Days", value: 13.9, percentage: 75 },
-  { name: "31-60 Days", value: 2.8, percentage: 15 },
-  { name: "61-90 Days", value: 1.1, percentage: 6 },
-  { name: "90+ Days", value: 0.7, percentage: 4 },
+  { name: "0-30 Days", value: 13.9, percentage: 75, count: 45 },
+  { name: "31-60 Days", value: 2.8, percentage: 15, count: 12 },
+  { name: "60+ Days", value: 1.8, percentage: 10, count: 8 },
 ];
 
-const COLORS = ["#10b981", "#f59e0b", "#ef4444", "#7f1d1d"];
+// DSO (Days Sales Outstanding) trend
+const dsoTrend = [
+  { month: "Jan", dso: 42 },
+  { month: "Feb", dso: 39 },
+  { month: "Mar", dso: 37 },
+  { month: "Apr", dso: 35 },
+  { month: "May", dso: 36 },
+  { month: "Jun", dso: 34 },
+];
+
+// Top at-risk clients requiring follow-up
+const atRiskClients = [
+  { 
+    name: "MegaMart", 
+    amount: "$340K", 
+    daysOverdue: 67, 
+    riskScore: 85,
+    lastContact: "3 days ago",
+    nextAction: "Final notice"
+  },
+  { 
+    name: "TechStart Inc", 
+    amount: "$280K", 
+    daysOverdue: 45, 
+    riskScore: 65,
+    lastContact: "1 week ago",
+    nextAction: "Follow-up call"
+  },
+  { 
+    name: "RetailHub", 
+    amount: "$180K", 
+    daysOverdue: 52, 
+    riskScore: 70,
+    lastContact: "2 days ago",
+    nextAction: "Email reminder"
+  },
+  { 
+    name: "BuildCo", 
+    amount: "$160K", 
+    daysOverdue: 38, 
+    riskScore: 55,
+    lastContact: "5 days ago",
+    nextAction: "Payment plan"
+  },
+];
+
+const COLORS = ["#10b981", "#f59e0b", "#ef4444"];
+
+const getRiskColor = (score: number) => {
+  if (score >= 70) return "text-red-600 bg-red-50";
+  if (score >= 40) return "text-orange-600 bg-orange-50";
+  return "text-green-600 bg-green-50";
+};
+
+const getRiskBadge = (score: number) => {
+  if (score >= 70) return { label: "High", color: "bg-red-100 text-red-700" };
+  if (score >= 40) return { label: "Medium", color: "bg-orange-100 text-orange-700" };
+  return { label: "Low", color: "bg-green-100 text-green-700" };
+};
+
+const getStatusBadge = (status: string) => {
+  if (status === "overdue") return { label: "Overdue", color: "bg-red-100 text-red-700" };
+  if (status === "late") return { label: "Late", color: "bg-orange-100 text-orange-700" };
+  return { label: "Due Soon", color: "bg-yellow-100 text-yellow-700" };
+};
+
+const formatCurrency = (amount: number) => {
+  if (amount >= 1000000) return `$${(amount / 1000000).toFixed(1)}M`;
+  if (amount >= 1000) return `$${(amount / 1000).toFixed(0)}K`;
+  return `$${amount}`;
+};
 
 export function Dashboard() {
   return (
@@ -40,7 +111,7 @@ export function Dashboard() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">{kpi.label}</p>
-                    <p className="text-2xl">{kpi.value}</p>
+                    <p className="text-2xl font-bold">{kpi.value}</p>
                     <div className="flex items-center gap-1">
                       {kpi.trend === "up" ? (
                         <TrendingUp className="h-4 w-4 text-green-600" />
@@ -48,7 +119,7 @@ export function Dashboard() {
                         <TrendingDown className="h-4 w-4 text-red-600" />
                       )}
                       <span
-                        className={`text-sm ${
+                        className={`text-sm font-medium ${
                           kpi.trend === "up" && kpi.label !== "At Risk"
                             ? "text-green-600"
                             : kpi.trend === "down" && kpi.label === "Overdue (30+)"
@@ -71,29 +142,41 @@ export function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Collection Trend */}
+        {/* Top Outstanding Invoices */}
         <Card>
           <CardHeader>
-            <CardTitle>Collection Performance</CardTitle>
+            <CardTitle>Top Outstanding Invoices</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={collectionTrend}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis dataKey="month" className="text-sm" />
-                <YAxis className="text-sm" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "hsl(var(--background))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "8px",
-                  }}
-                />
-                <Legend />
-                <Bar dataKey="collected" fill="#10b981" name="Collected (₹Cr)" radius={[8, 8, 0, 0]} />
-                <Bar dataKey="outstanding" fill="#ef4444" name="Outstanding (₹Cr)" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="space-y-3">
+              {topOutstandingInvoices.map((invoice, index) => {
+                const statusBadge = getStatusBadge(invoice.status);
+                return (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-mono text-sm font-semibold">{invoice.invoiceNo}</p>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${statusBadge.color}`}>
+                          {statusBadge.label}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                        <span className="font-medium">{invoice.client}</span>
+                        <span>•</span>
+                        <span>Due: {invoice.dueDate}</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold">{formatCurrency(invoice.amount)}</p>
+                      <p className="text-xs text-red-600 font-medium">{invoice.daysOverdue} days overdue</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </CardContent>
         </Card>
 
@@ -111,7 +194,7 @@ export function Dashboard() {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, percentage }) => `${name}: ${percentage}%`}
+                    label={({ name, percentage, count }) => `${name}: ${percentage}% (${count})`}
                     outerRadius={100}
                     fill="#8884d8"
                     dataKey="value"
@@ -126,7 +209,7 @@ export function Dashboard() {
                       border: "1px solid hsl(var(--border))",
                       borderRadius: "8px",
                     }}
-                    formatter={(value: number) => `₹${value}Cr`}
+                    formatter={(value: number) => `$${value}M`}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -135,63 +218,89 @@ export function Dashboard() {
         </Card>
       </div>
 
-      {/* AR Trend Chart */}
+      {/* DSO Trend */}
       <Card>
         <CardHeader>
-          <CardTitle>30-Day AR Trend</CardTitle>
+          <CardTitle>Days Sales Outstanding (DSO) Trend</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={250}>
-            <AreaChart
-              data={[
-                { date: "Dec 1", current: 12.7, overdue: 5.2 },
-                { date: "Dec 5", current: 13.1, overdue: 5.0 },
-                { date: "Dec 10", current: 13.3, overdue: 4.9 },
-                { date: "Dec 15", current: 13.5, overdue: 4.8 },
-                { date: "Dec 20", current: 13.7, overdue: 4.8 },
-                { date: "Dec 22", current: 13.9, overdue: 4.7 },
-              ]}
-            >
-              <defs>
-                <linearGradient id="colorCurrent" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0.1} />
-                </linearGradient>
-                <linearGradient id="colorOverdue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1} />
-                </linearGradient>
-              </defs>
+            <LineChart data={dsoTrend}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis dataKey="date" className="text-sm" />
-              <YAxis className="text-sm" />
+              <XAxis dataKey="month" className="text-sm" />
+              <YAxis className="text-sm" label={{ value: 'Days', angle: -90, position: 'insideLeft' }} />
               <Tooltip
                 contentStyle={{
                   backgroundColor: "hsl(var(--background))",
                   border: "1px solid hsl(var(--border))",
                   borderRadius: "8px",
                 }}
-                formatter={(value: number) => `₹${value}Cr`}
+                formatter={(value: number) => `${value} days`}
               />
               <Legend />
-              <Area
+              <Line
                 type="monotone"
-                dataKey="current"
-                stroke="#10b981"
-                fillOpacity={1}
-                fill="url(#colorCurrent)"
-                name="Current (₹Cr)"
+                dataKey="dso"
+                stroke="#3b82f6"
+                strokeWidth={2}
+                name="DSO (Days)"
+                dot={{ fill: '#3b82f6', r: 4 }}
               />
-              <Area
-                type="monotone"
-                dataKey="overdue"
-                stroke="#ef4444"
-                fillOpacity={1}
-                fill="url(#colorOverdue)"
-                name="Overdue (₹Cr)"
-              />
-            </AreaChart>
+            </LineChart>
           </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* At-Risk Clients - Follow-up Required */}
+      <Card>
+        <CardHeader>
+          <CardTitle>At-Risk Clients - Follow-up Required</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {atRiskClients.map((client, index) => {
+              const risk = getRiskBadge(client.riskScore);
+              return (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                >
+                  <div className="flex items-center gap-4 flex-1">
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <User className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-semibold">{client.name}</p>
+                        <span className={`text-xs px-2 py-1 rounded-full ${risk.color}`}>
+                          {risk.label} Risk
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span className="font-medium text-red-600">{client.amount}</span>
+                        <span>•</span>
+                        <span>{client.daysOverdue} days overdue</span>
+                        <span>•</span>
+                        <span>Last contact: {client.lastContact}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="text-right mr-4">
+                      <p className="text-sm font-medium text-primary">{client.nextAction}</p>
+                      <p className="text-xs text-muted-foreground">Next action</p>
+                    </div>
+                    <button className="p-2 hover:bg-accent rounded-lg transition-colors">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                    </button>
+                    <button className="p-2 hover:bg-accent rounded-lg transition-colors">
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </CardContent>
       </Card>
     </div>
