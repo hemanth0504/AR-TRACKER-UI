@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Dashboard } from "./components/Dashboard";
 import { InvoiceList } from "./components/InvoiceList";
-import { InvoiceIngestion } from "./components/InvoiceIngestion";
 import { AIInsights } from "./components/AIInsights";
 import { Collections } from "./components/Collections";
 import { CashApplication } from "./components/CashApplication";
@@ -31,7 +30,6 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { id: "ingestion", label: "Invoice Ingestion", icon: Upload },
   { id: "invoices", label: "Invoices", icon: FileText },
   { id: "ai-insights", label: "AI Insights", icon: Brain },
   { id: "collections", label: "Collections", icon: Workflow },
@@ -46,8 +44,6 @@ export default function App() {
     switch (activeTab) {
       case "dashboard":
         return <Dashboard />;
-      case "ingestion":
-        return <InvoiceIngestion />;
       case "invoices":
         return <InvoiceList />;
       case "ai-insights":
