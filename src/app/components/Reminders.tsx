@@ -25,7 +25,7 @@ import {
   CardTitle,
 } from "./ui/card";
 
-type ReminderStatus = "scheduled" | "sent" | "failed" | "pending";
+type ReminderStatus = "scheduled" | "sent" | "failed" | "not_sent";
 type ReminderChannel = "email" | "sms" | "whatsapp" | "call";
 
 type Reminder = {
@@ -68,7 +68,7 @@ export function Reminders() {
       amount: 180000,
       dueDate: "2024-01-10",
       scheduledDate: "2024-02-03",
-      status: "pending",
+      status: "not_sent",
       channel: "email",
       attemptCount: 0,
     },
@@ -138,7 +138,7 @@ export function Reminders() {
         return "bg-green-100 text-green-800";
       case "failed":
         return "bg-red-100 text-red-800";
-      case "pending":
+      case "not_sent":
         return "bg-orange-100 text-orange-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -199,10 +199,10 @@ export function Reminders() {
                 Retry
               </Button>
             )}
-            {reminder.status === "pending" && (
+            {reminder.status === "not_sent" && (
               <Button size="sm">
                 <Send className="h-3 w-3 mr-1" />
-                Send Now
+                Send Reminder
               </Button>
             )}
             {reminder.status === "scheduled" && (
@@ -245,7 +245,7 @@ export function Reminders() {
           <CardContent>
             <div className="text-2xl font-bold">12</div>
             <p className="text-xs text-muted-foreground">
-              Failed or pending reminders
+              Failed sends or reminders not yet sent
             </p>
           </CardContent>
         </Card>
@@ -354,7 +354,7 @@ export function Reminders() {
                   <h3 className="font-semibold">Reminders Needing Attention</h3>
                   <Button size="sm">
                     <Send className="h-3 w-3 mr-1" />
-                    Send All Pending
+                    Send All
                   </Button>
                 </div>
                 {actionRequiredReminders.map((reminder) => (
@@ -402,10 +402,10 @@ export function Reminders() {
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <Bell className="h-4 w-4" />
-            Active Automation Rules
+            Default Reminder Rules
           </CardTitle>
           <CardDescription>
-            Your current reminder cadence and escalation settings
+            Automatic reminder cadence applied to all overdue invoices
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
@@ -415,14 +415,21 @@ export function Reminders() {
           </div>
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Follow-up cadence</span>
-            <span className="font-medium">Every 7 days (3 attempts)</span>
+            <span className="font-medium">Every 7 days (max 3 attempts)</span>
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Escalation</span>
+            <span className="text-muted-foreground">Escalation trigger</span>
             <span className="font-medium">After 21 days overdue</span>
           </div>
+          <div className="flex items-center justify-between text-sm pt-2 border-t">
+            <span className="text-muted-foreground">Status</span>
+            <span className="font-medium text-green-600 flex items-center gap-1">
+              <CheckCircle className="h-3 w-3" />
+              Active
+            </span>
+          </div>
           <Button size="sm" variant="outline" className="w-full mt-3">
-            Manage Automation Rules
+            Configure Rules
           </Button>
         </CardContent>
       </Card>
