@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Dashboard } from "./components/Dashboard";
+import {Clients} from "./components/Clients";
 import { InvoiceList } from "./components/InvoiceList";
 import { AIInsights } from "./components/AIInsights";
 import { Collections } from "./components/Collections";
@@ -32,6 +33,7 @@ const navItems: NavItem[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "invoices", label: "Invoices", icon: FileText },
   { id: "ai-insights", label: "AI Insights", icon: Brain },
+  {id:"clients", label: "Clients", icon: Upload},
   { id: "collections", label: "Collections", icon: Workflow },
   { id: "cash-app", label: "Cash Application", icon: DollarSign },
   { id: "analytics", label: "Analytics", icon: TrendingUp },
@@ -48,6 +50,8 @@ export default function App() {
         return <InvoiceList />;
       case "ai-insights":
         return <AIInsights />;
+      case "clients":
+        return <Clients />;
       case "collections":
         return <Collections />;
       case "cash-app":
